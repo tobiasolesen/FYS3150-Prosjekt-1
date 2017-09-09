@@ -3,6 +3,12 @@ from matplotlib.pyplot import *
 from numpy import *
 from numpy.linalg import solve
 from numpy.random import randn
+import scipy
+import scipy.linalg
+
+#LU-dekomp skal ta lengre tid enn algoritmen fordi algoritmen bare jobber med
+#vektorer mens LU jobber med hele matriser.
+#LU-dekomp FLOPS: N**3, algo: 8n. Dvs: antall operasjoner vil oke mye raskere for LU
 
 N = 100        #Gridpoints
 h = 1/(N+1)    #Step length
@@ -108,8 +114,7 @@ def general(a,d,c,f_twidd):
     for k in reversed(range(2, N+1)):
         v[k-1] = (f_twidd[k-1] - c[k-1]*v[k])/d_twidd[k-1] #3(N-1) FLOPS
     return v
-
-    
+ 
 #print general(a,d,c,f_twidd)
 
 t = linspace(0,1,100)
@@ -121,3 +126,4 @@ ylabel('$y$', fontsize = 18)
 title('$Possion$ $equation,$ $analytic$ $and$ $numerical$', fontsize = 20)
 legend()
 show()
+

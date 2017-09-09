@@ -7,7 +7,7 @@ from numpy.linalg import solve
 from numpy.random import randn
 from math import log10
 
-N = 10        #Gridpoints
+N = 100        #Gridpoints
 h = 1/(N+1)    #Step length
 a = -1         #Values for Matrix elements
 b = 2
@@ -17,9 +17,6 @@ c = -1
 def U(x):
     u = 1-(1-exp(-10))*x - exp(-10*x)
     return u
-
-#Kaller pa U:
-u = U(x)
 
 #Numerical solution
 def f(x):
@@ -50,6 +47,9 @@ v[N+1] = 0
 for j in range(N+1):
 	x[j] = j*h 
 
+#Kaller pa U:
+u = U(x)
+
 #Filling A with 2's on diag and -1 on diags below and above diag
 #Setting values for B
 
@@ -65,19 +65,18 @@ for i in range(N+2):
 	if i!=(N+2):
 		A[i-1][i] = c
 	A[N+1][0] = 0
-	f_twidd[i] = h**2*f(x[i])
+	f_twidd[i] = h**2*f(x[i])      
 
 #Loser spesielt
 def special(f_twidd, d_twidd) :
     #Diag elements
     for k in range(1, N+1):
-            d_twidd[k] = (k+1.)/k
+            d_twidd[k] = (k+1.)/k   #Kalkulerer d_twidd pa "forhand" for a minimere FLOPS
     
     #Forward sub
     for k in range(2, N+1):
         f_twidd[k] = h**2*f(x[k]) + f_twidd[k-1]/d_twidd[k-1]
-    
-    
+        
     v[N] = f_twidd[N]/d_twidd[N]
     
     #Backward sub
@@ -85,11 +84,14 @@ def special(f_twidd, d_twidd) :
         v[k-1] = (f_twidd[k-1] + v[k])/d_twidd[k-1]
     return v
 
+v = special(f_twidd, d_twidd)
+
 #For a sammenligne generell med spesiell algo
 #a = ones(N+2)*(-1)
 #d = ones(N+2)*(2)
 #c = ones(N+2)*(-1)
 
+'''
 #Lager matrisen med tilfeldige tall (for det generelle tilfellet)
 a = randn(N+2)
 d = randn(N+2)
@@ -111,21 +113,23 @@ def general(a,d,c,f_twidd):
     for k in reversed(range(2, N+1)):
         v[k-1] = (f_twidd[k-1] - c[k-1]*v[k])/d_twidd[k-1]
     return v
+'''
+
+#v = general(a, d, c, f_twidd)
     
 error = zeros(N)
     
-#Kalkulerer den relative feilen
+#Kalkulerer den relative feilen (tallet vi far er det som 10 er opphoyd i)
 def rel_error(v, u):
     for k in range(N-1):
-        error[k] = log10(abs((v[i] - u[i])/u[i]))        
+        error[k] = log10(abs((v[k] - u[k])/u[k]))
         
-    return error
+    return error[1:-1]
     
 print rel_error(v, u) 
 
-
 #print general(a,d,c,f_twidd)
-
+'''
 t = linspace(0,1,100)
 plot(t, U(t), label = 'Analytic sol U(x)')
 hold('on')
@@ -135,3 +139,4 @@ ylabel('$y$', fontsize = 18)
 title('$Possion$ $equation,$ $analytic$ $and$ $numerical$', fontsize = 20)
 legend()
 show()
+'''
