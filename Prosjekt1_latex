@@ -1,0 +1,108 @@
+\documentclass[a4paper, norsk]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc, url}
+\usepackage{babel, textcomp}
+\urlstyle{sf}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+
+\title{FYS3150 Prosjekt 1}
+\author{tobias }
+\date{September 2017}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+\section{Metode/Fremgangsmåte}
+Differensialligningen vi vil løse ser slik ut:
+\begin{equation}
+-u''(x) = f(x)
+\end{equation}
+Differensialligningen vår (Poisson-ligningen) kan omgjøres til et lineært ligningsett, som deretter kan løses ved Gauss-eliminasjon.
+Først diskretiserer vi (1). Den andrederiverte av u kan da tilnærmes som:
+\begin{equation}
+-\frac{v_{i+1} + v_{i-1} - 2v_i} {h^2} = f_i
+\end{equation}
+hvor $i = 1, ..., n$, $f_i = f(x_i)$ og vi har definert steglengden $h = \frac{1}{n+1}$ (fra oppgaveteksten).
+Ligning (2) kan da skrives som matriseligningen
+\begin{equation}
+\bold{A}\vec{v} = \vec{b}
+\end{equation}
+hvor $b_i = h^2 f_i$.
+\subsection{Gauss eliminasjon}
+Ligning (3) gir oss følgende system (gitt et 4x4-tilfelle):
+$$a_{11}v_1 + a_{12}v_2 + a_{13}v_3 + a_{14}v_4 =b_1$$
+$$a_{21}v_1 + a_{22}v_2 + a_{23}v_3 + a_{24}v_4 =b_2$$
+$$a_{31}v_1 + a_{32}v_2 + a_{33}v_3 + a_{34}v_4 =b_3$$
+$$a_{41}v_1 + a_{42}v_2 + a_{43}v_3 + a_{44}v_4 =b_4$$
+
+Den generelle ideen bak Gauss eliminasjon er så å bruke den første ligningen til å eliminere den første ukjente $v_1$ fra de siste n-1 ligningene, for så å bruke den nye (andre) ligningen til å eliminere den andre ukjente $v_2$ fra de gjenværende n-2 ligningene. Med n-1 slike eliminasjoner vil man sitte igjen med et såkalt øvre triangulært ligningssett (bare nuller under hoveddiagonalen). Dette kalles også en framover-substitusjon. Det andre trinnet i metoden er en bakoversubstitusjon som vil gi oss løsningen.
+
+\subsection{Generell framover-substitusjon}
+Algoritmen vår for framover-substitusjon (for et generelt system) er altså basert på Gauss eliminasjon, og blir implementert i koden vår med en for loop over elementene $i$. For hver i oppdateres så diagonalelementene $b_i$ med de nye diagonalelementene $\tilde{b_i}$:
+
+\begin{equation}
+\tilde{b_i} = b_i - \frac{a_i c_{i-1}}{\tilde{b_{i-1}}}
+\end{equation}
+
+Den nye høyresiden $\tilde{f_i}$ er da gitt ved:
+
+\begin{equation}
+\tilde{f_i} = f_i - \frac{a_i \tilde{f_{i-1}}}{\tilde{b_{i-1}}}
+\end{equation}
+
+\subsection{Generell bakover-substitusjon}
+Bakover-substitusjonen gir oss så den endelige løsningen:
+
+\begin{equation}
+u_{i-1} = \frac{\tilde{f_{i-1}} - c_{i-1} u_i}{\tilde{b_{i-1}}}
+\end{equation}
+
+hvor $u_n = \tilde{f_n}/ \tilde{b_n}$ når $i = n$.
+
+\begin{figure}[h!]
+  \caption{Ligningssystemet med generell tridiagonal matrise A}
+  \includegraphics[width=\linewidth]{pict_1.png}
+\end{figure}
+
+\subsection{Spesiell framover-substitusjon}
+For vår spesifikke andrederiverte av u så får vi også en spesifikk tridiagonal matrise A. Denne matrisen har identiske elementer langs hele hoveddiagonalen samt identiske (men forskjellige) elementer både på diagonalen rett ovenfor og rett nedenfor hoveddiagonalen. Dette faktum kan brukes til å lage en algoritme spesifikt for A, som også består av en framover- og bakover-substitusjon henholdsvis. Framover-substitusjonen gir oss matrisens nye diagonalelementer $\tilde{d_i}$:
+
+
+\begin{equation}
+\tilde{d_i} = 2 - \frac{1}{\tilde{d_{i-1}}} = \frac{i+1}{i}
+\end{equation}
+samt den nye høyresiden $\tilde{f_i}$ av ligningen:
+\begin{equation}
+\tilde{f_i} = f_i + \frac{(i-1)\tilde{f_{i-1}}}{i}
+\end{equation}
+
+\begin{figure}[h!]
+  \caption{Den spesielle tridiagonale matrisen}
+  \includegraphics[width=\linewidth]{pict_2.png}
+\end{figure}
+
+\subsection{Spesiell bakover-substitusjon}
+Bakover-substitusjonen gir oss nok en gang den endelige løsningen:
+
+\begin{equation}
+u_{i-1} = \frac{i-1}{i} (\tilde{f_{i-1}} + u_i)
+\end{equation}
+
+med $u_n = \tilde{f_n} / \tilde{b_n}$.
+
+\subsection{Relativ feil}
+Vi er også interesserte i å kalkulere den relative feilen i resultatene for å kunne sammenligne den numeriske løsningen vår $v$ med den analytiske løsningen $u(x)$.
+Den relative feilen er gitt ved:
+\begin{equation}
+\epsilon_i=log_{10}\left(\left|\frac{v_i-u_i}
+                 {u_i}\right|\right)
+\end{equation}
+
+hvor $u(x) = 1-(1-e^{-10})x-e^{-10x}$.
+\end{document}
